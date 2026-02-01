@@ -1,0 +1,294 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   BASE LAYER - CSS Variables & Defaults
+   ============================================ */
+
+@layer base {
+  :root {
+    /* shadcn/ui variables - customized for Cahaya Putih Studio */
+    --background: 0 0% 100%;
+    --foreground: 210 20% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 10%;
+
+    /* Primary: Gold */
+    --primary: 45 80% 57%;
+    --primary-foreground: 210 20% 10%;
+
+    /* Secondary: Blue */
+    --secondary: 204 56% 46%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 210 20% 96%;
+    --muted-foreground: 210 15% 45%;
+
+    --accent: 204 56% 46%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 45 80% 57%;
+
+    --chart-1: 45 80% 57%;
+    --chart-2: 204 56% 46%;
+    --chart-3: 210 25% 20%;
+    --chart-4: 45 70% 70%;
+    --chart-5: 204 40% 70%;
+
+    --radius: 0.625rem;
+
+    /* Brand Colors */
+    --gold: #EBC138;
+    --gold-light: #E6CDA0;
+    --gold-dark: #C9A52D;
+    --navy: #07121A;
+    --navy-light: #1F4F72;
+    --brand-blue: #3281BB;
+    --brand-blue-light: #B8D6EC;
+    --gray-light: #F3F9FE;
+  }
+
+  .dark {
+    --background: 210 25% 8%;
+    --foreground: 0 0% 98%;
+    --card: 210 25% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 210 25% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 45 80% 57%;
+    --primary-foreground: 210 20% 10%;
+    --secondary: 204 56% 46%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 210 25% 15%;
+    --muted-foreground: 210 15% 65%;
+    --accent: 204 56% 46%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 25% 20%;
+    --input: 210 25% 20%;
+    --ring: 45 80% 57%;
+    --chart-1: 45 80% 57%;
+    --chart-2: 204 56% 46%;
+    --chart-3: 210 25% 50%;
+    --chart-4: 45 70% 70%;
+    --chart-5: 204 40% 70%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+}
+
+/* ============================================
+   COMPONENT LAYER - Reusable Styles
+   ============================================ */
+
+@layer components {
+  /* Glassmorphism Cards */
+  .glass-card {
+    @apply relative overflow-hidden rounded-xl;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .glass-card-dark {
+    @apply relative overflow-hidden rounded-xl;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(7, 18, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-card-light {
+    @apply relative overflow-hidden rounded-xl;
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+
+  /* Glass Buttons */
+  .btn-glass {
+    @apply relative px-6 py-3 rounded-lg font-medium transition-all duration-300;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-glass:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+  }
+
+  /* Gold Button */
+  .btn-gold {
+    @apply relative px-6 py-3 rounded-lg font-semibold text-navy transition-all duration-300;
+    background: linear-gradient(135deg, #EBC138 0%, #C9A52D 100%);
+    box-shadow: 0 4px 15px rgba(235, 193, 56, 0.3);
+  }
+
+  .btn-gold:hover {
+    box-shadow: 0 6px 20px rgba(235, 193, 56, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-gold:active {
+    animation: sink 0.3s ease;
+  }
+
+  /* Section Backgrounds */
+  .section-dark {
+    @apply relative;
+    background: radial-gradient(ellipse at center, #1F4F72 0%, #07121A 100%);
+  }
+
+  .section-light {
+    @apply relative bg-[#F3F9FE];
+  }
+
+  /* Gradient Text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #EBC138 0%, #ffffff 100%);
+  }
+
+  .gradient-text-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, #EBC138 0%, #C9A52D 100%);
+  }
+
+  /* Card Hover Effects */
+  .card-hover {
+    @apply transition-all duration-300;
+  }
+
+  .card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 8px 8px 15px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Container */
+  .container-custom {
+    @apply mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+
+  /* Scroll Indicator */
+  .scroll-indicator {
+    @apply flex flex-col items-center gap-2 text-white/70;
+  }
+
+  .scroll-indicator::after {
+    content: "";
+    @apply w-0.5 h-8 bg-white/50 rounded-full;
+    animation: scrollIndicator 2s ease-in-out infinite;
+  }
+}
+
+/* ============================================
+   UTILITY LAYER - Helper Classes
+   ============================================ */
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Animation Delays */
+  .delay-100 { animation-delay: 0.1s; }
+  .delay-200 { animation-delay: 0.2s; }
+  .delay-300 { animation-delay: 0.3s; }
+  .delay-400 { animation-delay: 0.4s; }
+  .delay-500 { animation-delay: 0.5s; }
+  .delay-600 { animation-delay: 0.6s; }
+  .delay-700 { animation-delay: 0.7s; }
+  .delay-800 { animation-delay: 0.8s; }
+
+  /* Stagger Children Animation */
+  .stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+  .stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+  .stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+  .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+  .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+  .stagger-children > *:nth-child(6) { animation-delay: 0.6s; }
+
+  /* Backdrop Filter Utilities */
+  .backdrop-blur-glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .backdrop-blur-glass-strong {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Safe Area Padding */
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  /* Aspect Ratios */
+  .aspect-hero {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-card {
+    aspect-ratio: 4 / 3;
+  }
+
+  .aspect-portrait {
+    aspect-ratio: 3 / 4;
+  }
+
+  /* Text Shadow */
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ============================================
+   LIQUID GLASS FILTER (SVG-based effect)
+   ============================================ */
+
+.liquid-glass-filter {
+  filter: url(#liquid-glass);
+}

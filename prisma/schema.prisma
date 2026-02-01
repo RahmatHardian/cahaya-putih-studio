@@ -1,0 +1,269 @@
+// Cahaya Putih Studio - Database Schema
+// Pre-order, Booking & Payment Verification System
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ADMIN & AUTHENTICATION
+// ============================================
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         Role     @default(ADMIN)
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  verifiedPayments PaymentProof[] @relation("VerifiedBy")
+  auditLogs        AuditLog[]     @relation("ActorAdmin")
+
+  @@map("admins")
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ============================================
+// SERVICES & PACKAGES
+// ============================================
+
+model Service {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  name         String
+  description  String?  @db.Text
+  thumbnailUrl String?  @map("thumbnail_url")
+  isActive     Boolean  @default(true) @map("is_active")
+  displayOrder Int      @default(0) @map("display_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  packages Package[]
+
+  @@map("services")
+}
+
+model Package {
+  id            String   @id @default(uuid())
+  serviceId     String   @map("service_id")
+  slug          String
+  name          String
+  description   String?  @db.Text
+  inclusions    Json?    // Array of included items
+  price         Decimal  @db.Decimal(12, 2)
+  dpPercentage  Int      @default(50) @map("dp_percentage")
+  durationHours Int?     @map("duration_hours")
+  isActive      Boolean  @default(true) @map("is_active")
+  displayOrder  Int      @default(0) @map("display_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  service  Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@unique([serviceId, slug])
+  @@map("packages")
+}
+
+// ============================================
+// CALENDAR & AVAILABILITY
+// ============================================
+
+model CalendarSlot {
+  id            String         @id @default(uuid())
+  date          DateTime       @unique @db.Date
+  status        SlotStatus     @default(AVAILABLE)
+  bookingId     String?        @map("booking_id")
+  blockedReason String?        @map("blocked_reason")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  // Relations
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  @@map("calendar_slots")
+}
+
+enum SlotStatus {
+  AVAILABLE
+  BOOKED
+  BLOCKED
+}
+
+// ============================================
+// BOOKINGS
+// ============================================
+
+model Booking {
+  id          String        @id @default(uuid())
+  bookingCode String        @unique @map("booking_code") // CPS-YYYYMMDD-XXXX
+  accessToken String        @unique @map("access_token") // Secure link token
+
+  // Client Information
+  clientName    String  @map("client_name")
+  clientEmail   String  @map("client_email")
+  clientPhone   String  @map("client_phone")
+  clientAddress String? @map("client_address") @db.Text
+
+  // Event Details
+  eventType     String?  @map("event_type")
+  eventDate     DateTime @map("event_date") @db.Date
+  eventLocation String?  @map("event_location") @db.Text
+  notes         String?  @db.Text
+
+  // Package & Pricing
+  packageId       String  @map("package_id")
+  packageSnapshot Json    @map("package_snapshot") // Snapshot at booking time
+  totalPrice      Decimal @map("total_price") @db.Decimal(12, 2)
+  dpAmount        Decimal @map("dp_amount") @db.Decimal(12, 2)
+
+  // Status
+  status BookingStatus @default(INVOICE_GENERATED)
+
+  // Timestamps
+  invoiceGeneratedAt DateTime  @default(now()) @map("invoice_generated_at")
+  dpDeadline         DateTime  @map("dp_deadline") // 72 hours from invoice
+  dpApprovedAt       DateTime? @map("dp_approved_at")
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancellationReason String?   @map("cancellation_reason") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  package       Package        @relation(fields: [packageId], references: [id])
+  calendarSlots CalendarSlot[]
+  paymentProofs PaymentProof[]
+  auditLogs     AuditLog[]     @relation("BookingLogs")
+
+  @@index([status])
+  @@index([eventDate])
+  @@index([accessToken])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  INVOICE_GENERATED
+  WAITING_VERIFICATION
+  DP_APPROVED
+  DP_REJECTED
+  CANCELLED
+}
+
+// ============================================
+// PAYMENT PROOFS
+// ============================================
+
+model PaymentProof {
+  id        String @id @default(uuid())
+  bookingId String @map("booking_id")
+
+  // File Information
+  fileName   String @map("file_name")
+  fileType   String @map("file_type")
+  fileSize   Int    @map("file_size") // bytes
+  fileUrl    String @map("file_url")
+  storageKey String @map("storage_key") // For deletion
+
+  // Payment Details (client-provided)
+  bankName       String?  @map("bank_name")
+  accountName    String?  @map("account_name")
+  transferAmount Decimal? @map("transfer_amount") @db.Decimal(12, 2)
+  transferDate   DateTime? @map("transfer_date") @db.Date
+
+  // Verification
+  verificationStatus VerificationStatus @default(PENDING) @map("verification_status")
+  verifiedById       String?            @map("verified_by")
+  verifiedAt         DateTime?          @map("verified_at")
+  rejectionReason    String?            @map("rejection_reason") @db.Text
+
+  uploadedAt DateTime @default(now()) @map("uploaded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  booking    Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  verifiedBy Admin?  @relation("VerifiedBy", fields: [verifiedById], references: [id])
+
+  @@index([bookingId])
+  @@map("payment_proofs")
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============================================
+// AUDIT LOGS
+// ============================================
+
+model AuditLog {
+  id String @id @default(uuid())
+
+  // Actor
+  actorType ActorType @map("actor_type")
+  actorId   String?   @map("actor_id")
+  actorName String?   @map("actor_name")
+
+  // Target
+  entityType String @map("entity_type") // BOOKING, PAYMENT_PROOF, CALENDAR_SLOT
+  entityId   String @map("entity_id")
+
+  // Action
+  action    String @map("action") // CREATED, UPDATED, STATUS_CHANGED, DELETED
+  oldValues Json?  @map("old_values")
+  newValues Json?  @map("new_values")
+
+  // Metadata
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent") @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  admin   Admin?   @relation("ActorAdmin", fields: [actorId], references: [id])
+  booking Booking? @relation("BookingLogs", fields: [entityId], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum ActorType {
+  SYSTEM
+  ADMIN
+  CLIENT
+}
+
+// ============================================
+// RATE LIMITING
+// ============================================
+
+model RateLimit {
+  id          String   @id @default(uuid())
+  identifier  String   // IP address or booking_id
+  action      String   // UPLOAD_PAYMENT_PROOF
+  count       Int      @default(1)
+  windowStart DateTime @map("window_start")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@unique([identifier, action, windowStart])
+  @@index([identifier, action, windowStart])
+  @@map("rate_limits")
+}
