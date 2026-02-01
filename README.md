@@ -131,7 +131,7 @@ INVOICE_GENERATED → WAITING_VERIFICATION → DP_APPROVED → (Schedule Locked)
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/cahaya-putih-studio.git
+   git clone https://github.com/RahmatHardian/cahaya-putih-studio.git
    cd cahaya-putih-studio
    ```
 
